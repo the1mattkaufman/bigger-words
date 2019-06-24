@@ -1,0 +1,90 @@
+<html>
+  <!-- This is the initial version of the sample Bigger Words applications -->
+  <body onload="getNext()" >
+    <style>
+      .definition {
+        color: black;
+        border-style: solid;
+        background-color: lightgrey;
+      }
+      .hide {
+        display: none;
+      }
+      .button {
+        margin-top:10px;
+      }
+      .green {
+        background-color: #4CAF50;
+      }
+      .red {
+        background-color: red;
+      }
+    </style>
+    <script type="application/javascript">
+      let currentItem;
+      let itemList = [
+        { word:'lexicomane', definition:'lover of a dictionary', timesRight:0, timesWrong:0, timesViewed:0 },        
+        { word:'avaricious', definition:'having or showing an extreme greed for wealth or material gain', timesRight:0, timesWrong:0, timesViewed:0 },
+        { word:'apprehension', definition:'a feeling of fear that something bad may happen', timesRight:0, timesWrong:0, timesViewed:0 },
+        { word:'consider', definition:'deem to be', timesRight:0, timesWrong:0, timesViewed:0 },
+        { word:'minute', definition:'infinitely or immeasurably small', timesRight:0, timesWrong:0, timesViewed:0},
+        { word:'accord', definition:'concurrence of opinion', timesRight:0, timesWrong:10, timesViewed:0},
+        { word:'evident', definition:'clearly revealed to the mind or the senses or judgment', timesRight:0, timesWrong:0, timesViewed:0},
+        { word:'practice', definition:'a customary way of operation or behavior', timesRight:0, timesWrong:0, timesViewed:0},
+        { word:'intend', definition:'have in mind as a purpose', timesRight:0, timesWrong:0, timesViewed:0},
+        { word:'concern', definition:'something that interests you because it is important', timesRight:0, timesWrong:0, timesViewed:0},
+        { word:'commit', definition:'perform an act, usually with a negative connotation', timesRight:0, timesWrong:0, timesViewed:0},
+        { word:'issue', definition:'some situation or event that is thought about', timesRight:0, timesWrong:0, timesViewed:0},
+        { word:'approach', definition:'move towards', timesRight:0, timesWrong:0, timesViewed:0}
+      ];
+      let getNext = () => {
+        itemList.sort((a, b) => a.timesViewed - b.timesViewed);
+        currentItem = itemList[0];
+        document.getElementById('word').innerHTML = currentItem.word;
+        document.getElementById('definition').innerHTML = currentItem.definition;
+        toggle('definition');
+        toggle('rightButton');
+        toggle('wrongButton');
+        console.info(currentItem);
+      }
+      let showDefinition = () => {
+        toggle('definition');
+        toggle('showButton');
+        toggle('rightButton');
+        toggle('wrongButton');
+        currentItem.timesViewed++;
+      }
+      let wasRight = () => {
+        currentItem.timesRight++;
+        console.info( currentItem );
+        toggle('showButton');
+        getNext();
+      }
+      let wasWrong = () => {
+        currentItem.timesWrong++;
+        console.info( currentItem );
+        toggle('showButton');
+        getNext();
+      }
+      let toggle = (tagId) =>{
+        let tag = document.getElementById(tagId);
+        tag.classList.toggle('hide');
+      }
+    </script>
+    <center>
+      <div >
+        <p>
+          <h1 id="word"></h1>
+        </p>
+      </div>
+      <div onclick="showDefinition();" >
+        <p>
+          <h3 id="definition" class="definition" ></h3>
+        </p>
+      </div>
+      <button id="showButton" onclick="showDefinition()" class="button" >Show Definition</button>
+      <button id="rightButton" onclick="wasRight()" class="button, green" >I was right</button>
+      <button id="wrongButton" onclick="wasWrong()" class="button, red" >I was wrong</button>
+    </center>
+  </body>
+</html>
