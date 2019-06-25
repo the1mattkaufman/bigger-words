@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-  <!-- There's no difference between v1 and v2, which is the point, you can host an app on Firebase very easily -->
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -61,6 +60,10 @@
       </div>
       <div class="top right" style="text-align:right;" >
         <div style="margin:10px;" >
+          <button id="loginButton" class="loginButton" onclick="toggleSignIn();">Sign In</button>
+          <image id="photoURL" class="hide" src="" onclick="toggleSignIn();" style="border-radius: 50%; height: 25px; width: 25px;" />
+        </div>
+        <div style="margin:10px;" >
           <span id="displayName" >Your Score</span>
           <div>Right: <span id="timesRight"></span></div>
           <div>Wrong: <span id="timesWrong"></span></div>
@@ -97,8 +100,19 @@
       </div>
     </footer>
 
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script defer src="/__/firebase/6.2.3/firebase-app.js"></script>
+
+    <!-- Add Firebase products that you want to use -->
+    <script defer src="/__/firebase/6.2.3/firebase-auth.js"></script>
+    <script defer src="/__/firebase/6.2.3/firebase-firestore.js"></script>
+    <script defer src="/__/firebase/6.2.3/firebase-functions.js"></script>
+
+    <!-- Initialize Firebase -->
+    <script defer src="/__/firebase/init.js"></script>
+
     <script type="application/javascript">
-      let player = { timesRight: 0, timesWrong: 0 };
+      let player = { timesRight: 0, timesWrong: 0, uid: '', photoURL: '', displayName: '' };
       let currentItem;
       let itemList = [
         { word:'lexicomane', definition:'lover of a dictionary'},        
@@ -145,6 +159,64 @@
         let tag = document.getElementById(tagId);
         tag.classList.toggle('hide');
       }
+
+      /**
+        START FIREBASE
+      */
+      let toggleSignIn = () => {
+        if (!firebase.auth().currentUser) {
+          let provider = new firebase.auth.GoogleAuthProvider();
+          provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+          firebase.auth().signInWithRedirect(provider);    
+        } else {
+          // Sign-out successful.
+          firebase.auth().signOut()
+        }
+        setPlayer();
+      }
+
+      let initApp = () => {
+        firebase.auth().getRedirectResult().then((result) => {
+          console.log( 'getRedirectResult()', result );
+          if (result.credential) {
+            let token = result.credential.accessToken;
+          }
+          let user = result.user;
+          setPlayer(user);
+        }).catch(function(error) {
+          let errorCode = error.code;
+          let errorMessage = error.message;
+          let email = error.email;
+          let credential = error.credential;
+          console.log( error );
+        });
+        
+        firebase.auth().onAuthStateChanged((user) => {
+          setPlayer(user);
+        });
+      }
+      let setPlayer = (user) => {
+        console.info(user);
+        document.getElementById('photoURL').classList.add('hide');
+        document.getElementById('loginButton').classList.remove('hide');
+        if ( user && user.uid ){
+          let email = user.email;
+          let emailVerified = user.emailVerified;
+          let isAnonymous = user.isAnonymous;
+          let providerData = user.providerData;
+          player.displayName = user.displayName;
+          document.getElementById('displayName').innerText = player.displayName;
+          player.photoURL = user.photoURL;
+          document.getElementById('photoURL').src = player.photoURL;
+          document.getElementById('photoURL').classList.remove('hide');
+          document.getElementById('loginButton').classList.add('hide');
+          player.uid = user.uid;
+        }
+      }
+      document.addEventListener('DOMContentLoaded', function() {
+        initApp();
+      });
+
     </script>
 
   </body>
