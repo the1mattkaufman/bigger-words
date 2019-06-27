@@ -187,11 +187,12 @@
           let provider = new firebase.auth.GoogleAuthProvider();
           provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
           firebase.auth().signInWithRedirect(provider);    
+          setState();
         } else {
           firebase.auth().signOut()
           player = defaultPlayer;
+          setState();
         }
-        setState();
       }
 
       /**

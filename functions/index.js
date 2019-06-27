@@ -203,5 +203,11 @@ let _incrementUser5 = async(uid, timesRightOrTimesWrong) => {
 }
 
 
-
-
+/**
+ * @description 
+ * @version 6.0
+ */
+exports.getWord6 = functions.https.onRequest( (request, response) => {
+  let word = _getWord();
+  response.json(word);
+});

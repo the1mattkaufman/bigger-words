@@ -54,7 +54,7 @@
       }
     </style> 
   </head>
-  <body onload="getNext()" >
+  <body>
     <header>
       <div style="width:100%; text-align: center;" >
         <h1>Bigger Words</h1>
@@ -74,7 +74,7 @@
               </p>
             </div>
             <button id="showButton" onclick="handleShowButtonClick()" class="button" >Show Definition</button>
-            <button id="nextbutton" onclick="getNext()" class="button hide" >Get Next</button>
+            <button id="nextButton" onclick="getNext()" class="button hide" >Get Next</button>
           </center>          
         </div>
     </section>
@@ -113,7 +113,7 @@
 
       let getNext = (rightOrWrong) => {
         let nextItem = firebase.functions().httpsCallable('getNext3');
-        nextItem( data ).then( result => {
+        nextItem().then( result => {
           console.info(result.data);
           currentItem = result.data;
           setState();
@@ -122,11 +122,17 @@
           document.getElementById('nextButton').classList.add('hide');
         });
       }
+
       let handleShowButtonClick = () => {
         document.getElementById('showButton').classList.add('hide');
         document.getElementById('definition').classList.remove('hide');
         document.getElementById('nextButton').classList.remove('hide');
       }
+
+      //This init's the app after everything is loaded on the page
+      document.addEventListener('DOMContentLoaded', function() {
+        getNext();
+      });
     </script>
 
   </body>
