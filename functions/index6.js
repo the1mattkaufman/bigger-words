@@ -5,7 +5,6 @@ let db = admin.firestore();
 const wordsCollection = db.collection('words');
 const usersCollection = db.collection('users');
 
-
 /**
  * @description Private function to use instead of Console.Log, so that I can easily comment out all comments 
  *              before deployment, which is a best practice
@@ -15,7 +14,7 @@ let logIt = (label, value) => {
   console.log( label, value );
 }
 
-const itemList = [
+let itemList = [
   { word:'lexicomane', definition:'lover of a dictionary'},        
   { word:'avaricious', definition:'having or showing an extreme greed for wealth or material gain'},
   { word:'apprehension', definition:'a feeling of fear that something bad may happen'},
@@ -30,31 +29,7 @@ const itemList = [
   { word:'issue', definition:'some situation or event that is thought about'},
   { word:'approach', definition:'move towards'}
 ];
-const itemListLength = itemList.length;
-
-
-
-
-/**
- * @description Web callable Function to increment User's Score and get next item
- * @version 3.0
- */
-exports.getNext3 = functions.https.onCall( () => {
-  let nextItem = _getNext3();
-  logIt( 'nextItem', nextItem );
-  return nextItem;
-});
-
-/**
- * @description Private Function to get next item
- * @version 3.0
- */
-let _getNext3 = async () => {
-  let randomNum = Math.floor(Math.random()*itemListLength);
-  return itemList[randomNum];
-}
-
-
+let itemListLength = itemList.length;
 
 /**
  * @description Function to perform a onetime insertion of data
@@ -77,76 +52,40 @@ exports.populateData4 = functions.https.onCall(() => {
   });
 });
 
-/**
- * @description Web callable Function to increment User's Score and get next item
- * @version 4.0
- */
-exports.getNext4 = functions.https.onCall( async (data, context) => {
-  logIt( 'data', data );
-  let nextItem = await _getNext4();
-  logIt( 'nextItem', nextItem );
-  return nextItem;
-});
 
 /**
- * @description Private Function to get next item
- * @version 4.0
- */
-let _getNext4 = async () => {
-  let randomNum = Math.floor(Math.random()*itemListLength);
-
-  let nextItem = await wordsCollection.where('num', '==', randomNum)
-  .limit(1)
-  .get()
-  .then( querySnapshot => {
-    let res;
-    querySnapshot.forEach( (doc) => {
-      res = doc.data();
-    });
-    return res;
-  });
-  logIt('_getNext() nextItem',nextItem);
-  return nextItem;
-}
-
-
-
-
-
-/**
- * @description Web callable Function to save and return user on login
+ * @description Callable Function to save user on login
  * @version 5.0
  */
-exports.saveUser5 = functions.https.onCall( async (data, context) => {
-  logIt('saveUser() data', data);
+exports.saveUser5 = functions.https.onCall( async (data) => {
+  console.log( 'data', data );
   let player = data;
-  if ( player && player.uid ){
+  if ( data && data.uid ){
     //we don't want to overwrite saved scores
     delete player.timesRight;
     delete player.timesWrong;
 
-    //Set the User record to update/insert and use merge to not erase values not provided
     let dbUser = await usersCollection.doc(player.uid).set(
       player, {merge:true}
     ).then(() => {
-      return usersCollection.doc(player.uid).get();
+      return dbUser.get();
     }).then(doc => {
       return doc;
     });
-    logIt('dbUser',dbUser);
+    console.log('dbUser',dbUser);
     player = dbUser;
   }
-  if ( player && !player.timesRight ){
+  if ( !player.timesRight ){
     player['timesRight'] = 0;
   }
-  if ( player && !player.timesWrong ){
+  if ( !player.timesWrong ){
     player['timesWrong'] = 0;
   }
   return player;
 });
 
 /**
- * @description Callable Function to get next item
+ * @description Callable Function to increment User's Score and get next item
  * @version 5.0
  */
 exports.getNext5 = functions.https.onCall( async (data, context) => {
@@ -164,9 +103,11 @@ exports.getNext5 = functions.https.onCall( async (data, context) => {
  * @version 5.0
  */
 let _getNext5 = async () => {
+  //This is an easy cheat to randomly getting an item out of the DB
+  //I've hardcoded the number of items possible, ideally, we'd query that first
   let randomNum = Math.floor(Math.random()*itemListLength);
 
-  let nextItem = await wordsCollection.where('num', '==', randomNum)
+  let next = await wordsCollection.where('num', '==', randomNum)
   .limit(1)
   .get()
   .then( querySnapshot => {
@@ -176,17 +117,17 @@ let _getNext5 = async () => {
     });
     return res;
   });
-  logIt('_getNext() nextItem',nextItem);
-  return nextItem;
+  console.log('next',next);
+  return next;
 }
 
 /**
  * @description Private Function to increment User's score
  * @version 5.0
  */
-let _incrementUser5 = async(uid, timesRightOrTimesWrong) => {
-  if ( uid ){
-    let documentRef = usersCollection.doc(uid);
+let _incrementUser5 = async(user, timesRightOrTimesWrong) => {
+  if ( user && user.uid ){
+    let documentRef = usersCollection.doc(user.uid);
     let dbUser = await documentRef.update(
       timesRightOrTimesWrong, admin.firestore.FieldValue.increment(1)
     ).then(() => {
@@ -195,13 +136,37 @@ let _incrementUser5 = async(uid, timesRightOrTimesWrong) => {
       // doc.get('counter') was incremented
       return doc;
     });
-    logIt('_incrementUser() dbUser',dbUser);
+    console.log('dbUser',dbUser);
     return dbUser;
   } else {
     return user
   }
 }
 
+/**
+ * @description Function to create/update a user on login
+ * @version 5.0
+ */
+exports.handleLogin5 = functions.https.onCall((data,context) => {
+  let user = data.user;
+  let userRef = usersCollection.doc(user.uid);
+  return userRef.set({
+      displayName: user.displayName,
+      photoURL: user.photoURL
+    }, {merge: true}
+  ).then(() => {
+    return userRef.get();
+  }).then(doc => {
+    // doc.get('counter') was incremented
+    return doc;
+  });
+});
 
 
-
+/**
+ * @description 
+ * @version 6.0
+ */
+exports.getWord6 = functions.https.onRequest((request, response) => {
+  response.json(_getWord());
+});

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-  <!-- There's no difference between v1 and v2, which is the point, you can host an app on Firebase very easily -->
+  <!-- Simple JS App hosted with Firebase Hosting -->
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -59,13 +59,6 @@
       <div style="width:100%; text-align: center;" >
         <h1>Bigger Words</h1>
       </div>
-      <div class="top right" style="text-align:right;" >
-        <div style="margin:10px;" >
-          <span id="displayName" >Your Score</span>
-          <div>Right: <span id="timesRight"></span></div>
-          <div>Wrong: <span id="timesWrong"></span></div>
-        </div>
-      </div>
     </header>
     <section style="margin: auto; margin-top:120px; min-height:200px;" >
         <div>
@@ -75,14 +68,13 @@
                 <h1 id="word"></h1>
               </p>
             </div>
-            <div onclick="showDefinition();" >
+            <div>
               <p>
                 <h3 id="definition" class="definition" ></h3>
               </p>
             </div>
-            <button id="showButton" onclick="showDefinition()" class="button" >Show Definition</button>
-            <button id="rightButton" onclick="calcScore('right')" class="button, green" >I was right</button>
-            <button id="wrongButton" onclick="calcScore('wrong')" class="button, red" >I was wrong</button>
+            <button id="showButton" onclick="handleShowButtonClick()" class="button" >Show Definition</button>
+            <button id="nextbutton" onclick="getNext()" class="button hide" >Get Next</button>
           </center>          
         </div>
     </section>
@@ -98,7 +90,6 @@
     </footer>
 
     <script type="application/javascript">
-      let player = { timesRight: 0, timesWrong: 0 };
       let currentItem;
       let itemList = [
         { word:'lexicomane', definition:'lover of a dictionary'},        
@@ -115,35 +106,30 @@
         { word:'issue', definition:'some situation or event that is thought about'},
         { word:'approach', definition:'move towards'}
       ];
-      let getNext = () => {
-        let randomNum = Math.floor(Math.random()*itemList.length);
-        currentItem = itemList[randomNum];
-        document.getElementById('timesRight').textContent = player.timesRight;
-        document.getElementById('timesWrong').textContent = player.timesWrong;
-        document.getElementById('word').textContent = currentItem.word;
-        document.getElementById('definition').textContent = currentItem.definition;
-        toggle('definition');
-        toggle('rightButton');
-        toggle('wrongButton');
-      }
-      let showDefinition = () => {
-        toggle('definition');
-        toggle('showButton');
-        toggle('rightButton');
-        toggle('wrongButton');
-      }
-      let calcScore = (result) => {
-        if ( result == 'right' ){
-          player.timesRight++;
-        } else {
-          player.timesWrong++;
+
+      /**
+       * @description Sets values on elements based on data
+       */
+       let setState = () => {
+        if ( currentItem ){
+          document.getElementById('word').textContent = currentItem.word;
+          document.getElementById('definition').textContent = currentItem.definition;          
         }
-        toggle('showButton');
-        getNext();
       }
-      let toggle = (tagId) =>{
-        let tag = document.getElementById(tagId);
-        tag.classList.toggle('hide');
+
+      let getNext = () => {
+        currentItem = itemList[Math.floor(Math.random()*itemList.length)];
+        console.info( currentItem );
+        setState();
+        document.getElementById('showButton').classList.remove('hide');
+        document.getElementById('definition').classList.add('hide');
+        document.getElementById('nextbutton').classList.add('hide');
+      }
+
+      let handleShowButtonClick = () => {
+        document.getElementById('showButton').classList.add('hide');
+        document.getElementById('definition').classList.remove('hide');
+        document.getElementById('nextbutton').classList.remove('hide');
       }
     </script>
 
