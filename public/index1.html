@@ -116,6 +116,7 @@
       ];
       let getNext = () => {
         currentItem = itemList[Math.floor(Math.random()*itemList.length)];
+        console.info( currentItem );
         document.getElementById('timesRight').textContent = player.timesRight;
         document.getElementById('timesWrong').textContent = player.timesWrong;
         document.getElementById('word').textContent = currentItem.word;

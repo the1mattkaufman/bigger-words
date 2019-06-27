@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bigger Words</title>
+    <style>
+      .definition {
+        color: black;
+        border-style: solid;
+        background-color: lightgrey;
+      }
+      .hide {
+        display: none;
+      }
+      .button {
+        margin-top:10px;
+      }
+      .green {
+        background-color: #4CAF50;
+      }
+      .red {
+        background-color: red;
+      }
+      .left {
+        left:0;
+        margin-left: 10px;
+        position: absolute;
+      }
+      .right {
+        margin-right: 10px;
+        position: absolute;
+        right: 0;
+      }
+      .top {
+        margin-top: 10px;
+        position: absolute;
+        top:0;
+      }
+      .bottom {
+        bottom:0;
+        margin-bottom: 10px;
+        position: absolute;
+      }
+      .loginButton {
+        background: rgb(66, 133, 244);
+        border: 1px solid #4285f4;
+        outline: none;
+        color: white;
+        font-weight: bold;
+        line-height: 28px;
+        padding: 0 12px;
+      }
+    </style> 
+  </head>
+  <body>
+    <header>
+      <div style="width:100%; text-align: center;" >
+        <h1>Bigger Words</h1>
+      </div>
+      <div class="top right" style="text-align:right;" >
+        <div style="margin:10px;" >
+          <button id="loginButton" class="loginButton" onclick="toggleSignIn();">Sign In</button>
+        </div>
+        <div style="margin:10px;" >
+          <image id="photoURL" src="https://image.flaticon.com/icons/svg/78/78299.svg" style="border-radius: 50%; height: 25px; width: 25px;" />
+        </div>
+        <div style="margin:10px;" >
+          <span id="displayName" >Login to Keep Score</span>
+          <div>Right: <span id="timesRight"></span></div>
+          <div>Wrong: <span id="timesWrong"></span></div>
+        </div>
+      </div>
+      <div class="top left">
+        <span onclick="populateData();">+</span>
+      </div>
+    </header>
+    <section style="margin: auto; margin-top:120px; min-height:200px;" >
+      <div>
+        <center>
+          <div >
+            <p>
+              <h1 id="word"></h1>
+            </p>
+          </div>
+          <div>
+            <p>
+              <h3 id="definition" class="definition" ></h3>
+            </p>
+          </div>
+          <button id="showButton" onclick="handleShowButtonClick()" class="button" >Show Definition</button>
+          <div id="scoreButtons" class="hide" >
+            <button id="rightButton" onclick="getNext('Right')" class="button, green" >I was right</button>
+            <button id="wrongButton" onclick="getNext('Wrong')" class="button, red" >I was wrong</button>
+          </div>
+        </center>          
+      </div>
+    </section>
+    <footer>
+      <div class="bottom left" style="text-align: center;" >
+        <image src="https://chart.googleapis.com/chart?choe=UTF-8&cht=qr&chs=100x100&chl=http%3A%2F%2Fbit.ly%2FbiggerWordsApp" /><br/>
+        <a href="http://bit.ly/biggerWordsApp" >bit.ly/biggerWordsApp</a>
+      </div>
+      <div class="bottom right" style="text-align: center;" >
+        <image src="https://chart.googleapis.com/chart?choe=UTF-8&cht=qr&chs=100x100&chl=http://bit.ly/biggerWordsGithub" /><br/>
+        <a href="http://bit.ly/biggerWordsGithub" >bit.ly/biggerWordsGithub</a>
+      </div>
+    </footer>
+
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script defer src="/__/firebase/6.2.3/firebase-app.js"></script>
+
+    <!-- Add Firebase products that you want to use -->
+    <script defer src="/__/firebase/6.2.3/firebase-auth.js"></script>
+    <script defer src="/__/firebase/6.2.3/firebase-firestore.js"></script>
+    <script defer src="/__/firebase/6.2.3/firebase-functions.js"></script>
+
+    <!-- Initialize Firebase -->
+    <script defer src="/__/firebase/init.js"></script>
+
+    <script type="application/javascript">
+      const defaultPlayer = { timesRight: 0, timesWrong: 0, uid: '', photoURL: 'https://image.flaticon.com/icons/svg/78/78299.svg', displayName: 'Login to Keep Score' };
+      let player;
+      let currentItem;
+
+      /**
+       * @description Sets values on elements based on data
+       */
+      let setState = () => {
+        document.getElementById('displayName').innerText = player.displayName;
+        document.getElementById('photoURL').src = player.photoURL;
+        document.getElementById('timesRight').innerText = player.timesRight;
+        document.getElementById('timesWrong').innerText = player.timesWrong;
+        if ( firebase.auth().currentUser ){
+          document.getElementById('loginButton').innerText = 'Sign Out';
+        } else {
+          document.getElementById('loginButton').innerText = 'Sign In';
+        }
+        if ( currentItem ){
+          document.getElementById('word').textContent = currentItem.word;
+          document.getElementById('definition').textContent = currentItem.definition;          
+        }
+      }
+
+      /**
+       * @description Call a Firebase Function to populate data in Firestore
+       */
+      let populateData = () => {
+        let dataLoad = firebase.functions().httpsCallable('populateData');
+        dataLoad().then( result => {
+          console.info( result );
+        });
+      }
+
+      /**
+       * @description Pass in the result of this word and get the next word from Firestore
+       */
+      let getNext = (rightOrWrong) => {
+        let timesRightOrTimesWrong = 'times'+rightOrWrong;
+        let data = { uid: player.uid, timesRightOrTimesWrong: timesRightOrTimesWrong }
+        let nextItem = firebase.functions().httpsCallable('getNext');
+        nextItem( data ).then( result => {
+          console.info(result.data);
+          currentItem = result.data;
+          document.getElementById('showButton').classList.remove('hide');
+          document.getElementById('definition').classList.add('hide');
+          document.getElementById('scoreButtons').classList.add('hide');
+          setState();
+        });
+      }
+
+      /**
+       * @description 
+       */
+      let handleShowButtonClick = () => {
+        document.getElementById('showButton').classList.add('hide');
+        document.getElementById('definition').classList.remove('hide');
+        document.getElementById('scoreButtons').classList.remove('hide');
+      }
+
+      /**
+       * @description Start Login or Perform Logout
+       */
+      let toggleSignIn = () => {
+        if (!firebase.auth().currentUser) {
+          let provider = new firebase.auth.GoogleAuthProvider();
+          provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+          firebase.auth().signInWithRedirect(provider);    
+        } else {
+          firebase.auth().signOut()
+          player = defaultPlayer;
+        }
+        setState();
+      }
+
+      let initApp = () => {
+        player = defaultPlayer;
+        let db = firebase.firestore();
+
+        //Handle a successful login
+        firebase.auth().getRedirectResult().then( (result) => {
+          console.log( 'getRedirectResult()', result );
+          // let token = result.credential.accessToken;
+          if ( result.user ){
+            setPlayerFromUser(result.user);
+            console.info( 'getRedirectResult().player', JSON.stringify(player) );
+            let dbUser = firebase.functions().httpsCallable('saveUser');
+            dbUser( player ).then( dbResult => {
+              console.info('saveUser Result',dbResult.data);
+            });
+          }
+        }).catch(function(error) {
+          // let errorCode = error.code;
+          // let errorMessage = error.message;
+          // let email = error.email;
+          // let credential = error.credential;
+          console.log( error );
+        });
+        
+        firebase.auth().onAuthStateChanged((user) => {
+          console.log( 'onAuthStateChanged', user );
+          if ( user && user.uid ){
+            db.collection("users").doc(user.uid)
+            .onSnapshot(function(doc) {
+              console.log("User Listener: ", doc.data());
+              setPlayerFromUser(doc.data());
+              setState();
+            });
+          }
+        });
+        getNext();
+      }
+
+      let saveUser = (user) => {
+        console.info('saveUser', user);
+        let dbUser = firebase.functions().httpsCallable('saveUser');
+        dbUser(user).then( result => {
+          console.info('handleLogin',result.data);
+          setPlayerFromUser(user);
+          setState();
+        });
+      }
+
+      let setPlayerFromUser = (user) => {
+        console.info( 'user', user );
+        player.uid = (user && user.uid) ? user.uid : player.uid;
+        player.displayName = (user && user.displayName) ? user.displayName : player.displayName;
+        player.photoURL = (user && user.photoURL) ? user.photoURL : player.photoURL;
+        player.timesRight = (user && user.timesRight) ? user.timesRight : player.timesRight;
+        player.timesWrong = (user && user.timesWrong) ? user.timesWrong : player.timesWrong;
+        console.info( 'player', player );
+      }
+
+
+/*
+      let getPlayer = (user) => {
+        console.info('user',user);
+        if ( player.uid != '' ){
+          let dbUser = firebase.functions().httpsCallable('handleLogin');
+          dbUser(user).then( result => {
+            console.info('handleLogin',result.data);
+            if ( result && result.data ){
+              player.timesRight = result.data.timesRight;
+              player.timesWrong = result.data.timesWrong;
+            }
+          });
+        }
+        setState();
+      }
+*/
+
+      //This init's the app after everything is loaded on the page
+      document.addEventListener('DOMContentLoaded', function() {
+        initApp();
+      });
+
+    </script>
+
+  </body>
+</html>

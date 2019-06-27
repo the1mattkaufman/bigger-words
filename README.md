@@ -3,10 +3,9 @@ This repo contains sample code for use with my talk "Building a backend for your
 
 This talk walks through how to migrate a simple web application to Firebase, including:
 
-1. Host it on Firebase Hosting
-2. Use a Firebase Function to store our JavaScript functions
-3. Load our data in Firestore
-4. Query Firestore with a Firebase Function
-5. Update values in Firestore with a Firebase Function
-6. Expose a Firebase Function as a Restful Web Service
+1. Hosting it on Firebase Hosting
+2. Authenticating users with Firebase Auth
+3. Working with data in Firestore
+4. Using a Firebase Function to move functions server side
+5. Exposing a Firebase Function as a Restful Web Service
 
