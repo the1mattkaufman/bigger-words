@@ -208,9 +208,9 @@
           if ( result.user ){
             setPlayerFromUser(result.user);
             console.info( 'getRedirectResult().player', JSON.stringify(player) );
-            let dbUser = firebase.functions().httpsCallable('saveUser');
+            let dbUser = firebase.functions().httpsCallable('saveUser5');
             dbUser( player ).then( dbResult => {
-              console.info('saveUser Result',dbResult.data);
+              console.info('saveUser5 Result',dbResult.data);
             });
           }
         }).catch(function(error) {
@@ -246,6 +246,9 @@
       }
 
       let setPlayerFromUser = (user) => {
+        if ( !player ){
+          player = {};
+        }
         player.uid = (user && user.uid) ? user.uid : player.uid;
         player.displayName = (user && user.displayName) ? user.displayName : player.displayName;
         player.photoURL = (user && user.photoURL) ? user.photoURL : player.photoURL;

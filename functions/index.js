@@ -117,7 +117,7 @@ let _getNext4 = async () => {
  * @description Web callable Function to save and return user on login
  * @version 5.0
  */
-exports.saveUser5 = functions.https.onCall( async (data, context) => {
+exports.saveUser5 = functions.https.onCall( async (data) => {
   logIt('saveUser() data', data);
   let player = data;
   if ( player && player.uid ){
