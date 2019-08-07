@@ -207,5 +207,5 @@ let _incrementUser5 = async(uid, timesRightOrTimesWrong) => {
  * @version 6.0
  */
 exports.getWord6 = functions.https.onRequest((request, response) => {
-  response.json(_getWord());
+  response.json(_getNext5());
 });
