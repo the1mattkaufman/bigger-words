@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <!-- Data stored in Firestore -->
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bigger Words</title>
+    <style>
+      .definition {
+        color: black;
+        border-style: solid;
+        background-color: lightgrey;
+      }
+      .hide {
+        display: none;
+      }
+      .button {
+        margin-top:10px;
+      }
+      .green {
+        background-color: #4CAF50;
+      }
+      .red {
+        background-color: red;
+      }
+      .left {
+        left:0;
+        margin-left: 10px;
+        position: absolute;
+      }
+      .right {
+        margin-right: 10px;
+        position: absolute;
+        right: 0;
+      }
+      .top {
+        margin-top: 10px;
+        position: absolute;
+        top:0;
+      }
+      .bottom {
+        bottom:0;
+        margin-bottom: 10px;
+        position: absolute;
+      }
+      .loginButton {
+        background: rgb(66, 133, 244);
+        border: 1px solid #4285f4;
+        outline: none;
+        color: white;
+        font-weight: bold;
+        line-height: 28px;
+        padding: 0 12px;
+      }
+    </style> 
+  </head>
+  <body>
+    <header>
+      <div style="width:100%; text-align: center;" >
+        <h1>Bigger Words</h1>
+      </div>
+      <div class="top left">
+        <span onclick="populateData();">+</span>
+      </div>
+    </header>
+    <section style="margin: auto; margin-top:120px; min-height:200px;" >
+      <div>
+        <center>
+          <div >
+            <p>
+              <h1 id="word"></h1>
+            </p>
+          </div>
+          <div>
+            <p>
+              <h3 id="definition" class="definition" ></h3>
+            </p>
+          </div>
+          <button id="showButton" onclick="handleShowButtonClick()" class="button" >Show Definition</button>
+          <button id="nextbutton" onclick="getNext()" class="button hide" >Get Next</button>
+        </center>          
+      </div>
+    </section>
+    <footer>
+      <div class="bottom left" style="text-align: center;" >
+        <image src="https://chart.googleapis.com/chart?choe=UTF-8&cht=qr&chs=100x100&chl=http%3A%2F%2Fbit.ly%2FbiggerWordsApp" /><br/>
+        <a href="http://bit.ly/biggerWordsApp" >bit.ly/biggerWordsApp</a>
+      </div>
+      <div class="bottom right" style="text-align: center;" >
+        <image src="https://chart.googleapis.com/chart?choe=UTF-8&cht=qr&chs=100x100&chl=http://bit.ly/biggerWordsGithub" /><br/>
+        <a href="http://bit.ly/biggerWordsGithub" >bit.ly/biggerWordsGithub</a>
+      </div>
+    </footer>
+
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script defer src="/__/firebase/6.2.3/firebase-app.js"></script>
+
+    <!-- Add Firebase products that you want to use -->
+    <script defer src="/__/firebase/6.2.3/firebase-functions.js"></script>
+
+    <!-- Initialize Firebase -->
+    <script defer src="/__/firebase/init.js"></script>
+
+    <script type="application/javascript">
+      let currentItem;
+
+      /**
+       * @description Sets values on elements based on data
+       */
+      let setState = () => {
+        if ( currentItem ){
+          document.getElementById('word').textContent = currentItem.word;
+          document.getElementById('definition').textContent = currentItem.definition;          
+        }
+      }
+
+      /**
+       * @description Call a Firebase Function to populate data in Firestore
+       */
+      let populateData = () => {
+        let dataLoad = firebase.functions().httpsCallable('populateData4');
+        dataLoad().then( result => {
+          console.info( result );
+        });
+      }
+
+      /**
+       * @description Pass in the result of this word and get the next word from Firestore
+       */
+      let getNext = () => {
+        let nextItem = firebase.functions().httpsCallable('getNext4');
+        nextItem().then( result => {
+          console.info(result.data);
+          currentItem = result.data;
+          setState();
+          document.getElementById('showButton').classList.remove('hide');
+          document.getElementById('definition').classList.add('hide');
+          document.getElementById('scoreButtons').classList.add('hide');
+          setState();
+        });
+      }
+
+      /**
+       * @description Displays the Definition and Score Buttons
+       */
+      let handleShowButtonClick = () => {
+        document.getElementById('showButton').classList.add('hide');
+        document.getElementById('definition').classList.remove('hide');
+        document.getElementById('scoreButtons').classList.remove('hide');
+      }
+
+    </script>
+
+  </body>
+</html>
